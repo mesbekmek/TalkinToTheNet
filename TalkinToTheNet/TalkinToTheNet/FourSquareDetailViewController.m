@@ -7,17 +7,29 @@
 //
 
 #import "FourSquareDetailViewController.h"
+#import "STTwitter.h"
 
-@interface FourSquareDetailViewController ()
+@interface FourSquareDetailViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *locationLabel;
 @property (weak, nonatomic) IBOutlet UILabel *categoryLabel;
+@property (weak, nonatomic) IBOutlet UITableView *tweetsTableView;
 
+@property (nonatomic) NSMutableArray *twitterFeed;
+@property (nonatomic) NSString *twitterHandle;
 @end
 
 @implementation FourSquareDetailViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self setup];
+}
+
+- (void)setup{
+    
+    //Tableview setup
+    self.tweetsTableView.dataSource = self;
+    self.tweetsTableView.delegate = self;
     
     //Location Section from API response
     NSDictionary *location = [self.foursquareData objectForKey:@"location"];
@@ -34,8 +46,74 @@
     NSString *category = [categoryObject objectForKey:@"name"];
     
     self.categoryLabel.text = category;
+    
+    //Quest to find thy twitter handle
+    NSDictionary *contacts = [self.foursquareData objectForKey:@"contact"];
+    NSArray *allKeys = [contacts allKeys];
+    if([allKeys containsObject:@"twitter"]){
+        self.twitterHandle = [contacts objectForKey:@"twitter"];
+    }
+    else{
+        self.twitterHandle = @"Doesn't have twitter account";
+    }
+    
+    //Refreshing capabilities
+    
+    UIRefreshControl *refreshControl = [UIRefreshControl new];
+    [refreshControl addTarget:self action:@selector(refreshTweets:) forControlEvents:UIControlEventValueChanged];
+    [self.tweetsTableView addSubview:refreshControl];
+    
 }
 
+#pragma mark Refreshing method
+
+-(void)refreshTweets:(UIRefreshControl *)rc{
+    [self.tweetsTableView reloadData];
+    [rc endRefreshing];
+}
+
+#pragma mark Table View Data source and Delegate Methods
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.twitterFeed.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"CellID" forIndexPath:indexPath];
+    
+    if(cell == nil){
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"CellID"];
+    }
+    NSDictionary *tweets = self.twitterFeed[indexPath.row];
+    cell.textLabel.text = tweets[@"text"];
+    cell.imageView.image = tweets[@"image"];
+    return cell;
+    
+}
+
+- (IBAction)twitterButtonTapped:(UIButton *)sender {
+    STTwitterAPI *twitter = [STTwitterAPI twitterAPIAppOnlyWithConsumerKey:@"JNSvKZtVsPN6UEgFZSuZsbFJn" consumerSecret:@"sFk4RbyK83Mo7S7aRwCfENS2KHa1zi5CkQ0LNHmJ5vBlpqfjaJ"];
+    [twitter verifyCredentialsWithUserSuccessBlock:^(NSString *username, NSString *userID) {
+        [twitter getUserTimelineWithScreenName:self.twitterHandle successBlock:^(NSArray *statuses) {
+            
+            self.twitterFeed = [NSMutableArray arrayWithArray:statuses];
+            [self.tweetsTableView reloadData];
+        
+            
+        } errorBlock:^(NSError *error) {
+            NSLog(@"%@",error.debugDescription);
+
+        }];
+        
+    } errorBlock:^(NSError *error) {
+        
+        NSLog(@"%@",error.debugDescription);
+    }];
+}
 
 
 /*
