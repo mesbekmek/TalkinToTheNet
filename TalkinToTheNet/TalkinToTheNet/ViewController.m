@@ -33,7 +33,9 @@ CLLocationManagerDelegate>
 
 @end
 
-@implementation ViewController
+@implementation ViewController{
+    CLLocationManager *locationManager;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -46,12 +48,10 @@ CLLocationManagerDelegate>
     self.tableView.dataSource = self;
     self.searchTextField.delegate = self;
     self.mapView.delegate = self;
-   // locationManager.delegate = self;
+    locationManager.delegate = self;
     
     
     //Foursquare API string
-//    NSString *latitude = [NSString stringWithFormat:@"%f",self.mapView.userLocation.location.coordinate.latitude];
-//    NSString *longitude = [NSString stringWithFormat:@"%f",self.mapView.userLocation.location.coordinate.longitude];
     self.urlString = [NSString stringWithFormat:@"https://api.foursquare.com/v2/venues/search?ll=%@,%@&client_id=%@&client_secret=%@&v=20150920",latitude,longitude,clientID,clientSecrect];
     [self fetchFourSquareData:self.urlString];
     
@@ -136,14 +136,10 @@ CLLocationManagerDelegate>
     [self.mapView setCenterCoordinate:userLocation.coordinate animated:YES];
     
     [self.mapView addAnnotation:point];
-    
-
-    
-//    [locationManager stopUpdatingLocation];
+    [locationManager stopUpdatingLocation];
 }
 
 - (IBAction)zoomToCurrentLocation:(UIBarButtonItem *)sender {
-  //  self.searchButton.enabled = NO;
     float spanX = 0.00725;
     float spanY = 0.00725;
     MKCoordinateRegion region;
@@ -171,8 +167,8 @@ CLLocationManagerDelegate>
 
 #pragma mark - Life Cycle
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
-    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
     
+    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
     NSDictionary *fourSquareData = self.searchResults[indexPath.row];
     FourSquareDetailViewController *vc = segue.destinationViewController;
     vc.foursquareData = fourSquareData;

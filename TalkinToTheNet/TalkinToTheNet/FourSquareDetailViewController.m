@@ -119,15 +119,12 @@
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         NSLog(@"Ok Action");
     }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"Cancel Action");
-    }];
     [alert addAction:okAction];
-    [alert addAction:cancelAction];
     [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (IBAction)twitterButtonTapped:(UIButton *)sender {
+    
     STTwitterAPI *twitter = [STTwitterAPI twitterAPIAppOnlyWithConsumerKey:@"JNSvKZtVsPN6UEgFZSuZsbFJn" consumerSecret:@"sFk4RbyK83Mo7S7aRwCfENS2KHa1zi5CkQ0LNHmJ5vBlpqfjaJ"];
     [twitter verifyCredentialsWithUserSuccessBlock:^(NSString *username, NSString *userID) {
         [twitter getUserTimelineWithScreenName:self.twitterHandle successBlock:^(NSArray *statuses) {

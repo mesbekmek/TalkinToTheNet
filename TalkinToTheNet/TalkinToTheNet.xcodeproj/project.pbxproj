@@ -95,8 +95,8 @@
 		8D7DCD481BAF859400A92AD2 /* TalkinToTheNet */ = {
 			isa = PBXGroup;
 			children = (
-				8D7DCD4C1BAF859400A92AD2 /* AppDelegate.h */,
 				8D7DCD4D1BAF859400A92AD2 /* AppDelegate.m */,
+				8D7DCD4C1BAF859400A92AD2 /* AppDelegate.h */,
 				DCF1D5CE1BB0628100569017 /* APIManager.h */,
 				DCF1D5CF1BB0628100569017 /* APIManager.m */,
 				8D7DCD4F1BAF859400A92AD2 /* ViewController.h */,
