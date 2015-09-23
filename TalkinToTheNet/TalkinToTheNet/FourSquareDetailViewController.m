@@ -13,6 +13,8 @@
 @property (weak, nonatomic) IBOutlet UILabel *locationLabel;
 @property (weak, nonatomic) IBOutlet UILabel *categoryLabel;
 @property (weak, nonatomic) IBOutlet UITableView *tweetsTableView;
+@property (weak, nonatomic) IBOutlet UIButton *twitterButton;
+@property (weak, nonatomic) IBOutlet UILabel *locationLabel2;
 
 @property (nonatomic) NSMutableArray *twitterFeed;
 @property (nonatomic) NSString *twitterHandle;
@@ -36,9 +38,17 @@
     NSArray *formattedAddress = [location objectForKey:@"formattedAddress"];
     
     NSString *addressOne = [formattedAddress firstObject];
-    NSString *addressTwo = formattedAddress[1];
+    self.locationLabel.text = addressOne ;
+
     
-    self.locationLabel.text = [addressOne stringByAppendingString:addressTwo];
+    if(formattedAddress.count >1){
+        NSString *addressTwo = formattedAddress[1];
+        self.locationLabel2.text = addressTwo;
+    }
+    else{
+        self.locationLabel2.text = @" ";
+    }
+    
     
     //Category Section From API response
     NSArray *categoryArray = [self.foursquareData objectForKey:@"categories"];
@@ -88,11 +98,33 @@
     if(cell == nil){
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"CellID"];
     }
+   
+   
     NSDictionary *tweets = self.twitterFeed[indexPath.row];
     cell.textLabel.text = tweets[@"text"];
-    cell.imageView.image = tweets[@"image"];
-    return cell;
+        cell.imageView.image = tweets[@"image"];
+
+        return cell;
     
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 100.0;
+}
+
+#pragma mark Alert Controller method
+-(void) noTweetsFoundAlert{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Twitter Account Found" message:@"Sorry" preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"Ok Action");
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"Cancel Action");
+    }];
+    [alert addAction:okAction];
+    [alert addAction:cancelAction];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (IBAction)twitterButtonTapped:(UIButton *)sender {
@@ -102,14 +134,20 @@
             
             self.twitterFeed = [NSMutableArray arrayWithArray:statuses];
             [self.tweetsTableView reloadData];
-        
+            
             
         } errorBlock:^(NSError *error) {
+            if(self.twitterFeed.count == 0){
+                [self noTweetsFoundAlert];
+            }
             NSLog(@"%@",error.debugDescription);
 
         }];
         
     } errorBlock:^(NSError *error) {
+        if(self.twitterFeed.count == 0){
+            [self noTweetsFoundAlert];
+        }
         
         NSLog(@"%@",error.debugDescription);
     }];
