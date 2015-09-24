@@ -35,6 +35,8 @@ CLLocationManagerDelegate>
 
 @implementation ViewController{
     CLLocationManager *locationManager;
+    UITapGestureRecognizer *tap;
+    CLLocationCoordinate2D touchMapCoordinate;
 }
 
 - (void)viewDidLoad {
@@ -50,7 +52,6 @@ CLLocationManagerDelegate>
     self.mapView.delegate = self;
     locationManager.delegate = self;
     
-    
     //Foursquare API string
     self.urlString = [NSString stringWithFormat:@"https://api.foursquare.com/v2/venues/search?ll=%@,%@&client_id=%@&client_secret=%@&v=20150920",latitude,longitude,clientID,clientSecrect];
     [self fetchFourSquareData:self.urlString];
@@ -64,7 +65,12 @@ CLLocationManagerDelegate>
     self.mapView.showsUserLocation = YES;
     self.mapView.mapType = MKMapTypeStandard;
     self.mapView.userInteractionEnabled = YES;
-    self.searchButton.enabled = NO;
+  //  self.searchButton.enabled = NO;
+    
+    //Ability to drop a pin on the map
+    UILongPressGestureRecognizer *gestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    gestureRecognizer.minimumPressDuration = 1.1;
+    [self.mapView addGestureRecognizer:gestureRecognizer];
 }
 
 
@@ -124,6 +130,19 @@ CLLocationManagerDelegate>
     return YES;
 }
 
+- (void)textFieldDidBeginEditing:(UITextField *)textField{
+    //Dismiss keyboard when pressing outside textfield
+    tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
+    [self.view addGestureRecognizer:tap];   
+}
+
+
+-(void)dismissKeyboard{
+    [self.searchTextField resignFirstResponder];
+    [self.view removeGestureRecognizer:tap];
+    
+}
+
 #pragma mark - Map View and Location Manager methods
 
 -(void)mapView:(MKMapView *)mapView didUpdateUserLocation:(nonnull MKUserLocation *)userLocation{
@@ -137,6 +156,20 @@ CLLocationManagerDelegate>
     
     [self.mapView addAnnotation:point];
     [locationManager stopUpdatingLocation];
+    locationManager = nil;
+}
+
+-(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
+    if(gestureRecognizer.state != UIGestureRecognizerStateBegan){
+        return;
+    }
+    
+    CGPoint touchPoint = [gestureRecognizer locationInView:self.mapView];
+    touchMapCoordinate = [self.mapView convertPoint:touchPoint toCoordinateFromView:self.mapView];
+    MKPointAnnotation *annotation = [MKPointAnnotation new];
+    annotation.coordinate = touchMapCoordinate;
+    self.mapView.userLocation.coordinate = touchMapCoordinate;
+    [self.mapView addAnnotation:annotation];
 }
 
 - (IBAction)zoomToCurrentLocation:(UIBarButtonItem *)sender {
@@ -156,8 +189,8 @@ CLLocationManagerDelegate>
 }
 
 - (IBAction)searchButtonTapped:(UIBarButtonItem *)sender {
-    NSString *latitude = [NSString stringWithFormat:@"%f",self.mapView.userLocation.location.coordinate.latitude];
-    NSString *longitude = [NSString stringWithFormat:@"%f",self.mapView.userLocation.location.coordinate.longitude];
+    NSString *latitude = [NSString stringWithFormat:@"%f",touchMapCoordinate.latitude];
+    NSString *longitude = [NSString stringWithFormat:@"%f",touchMapCoordinate.longitude];
     NSString *queryString = [NSString stringWithFormat:@"https://api.foursquare.com/v2/venues/search?ll=%@,%@&client_id=2Y20530SGQR4IN4DVOMH41P312TZMVKSTFEMQNERGYQ3UW2T&client_secret=4F3XAJLC01RA5IXLSI20XKOFYJI2ZVKJWEV2235WIV0N4MJG&v=20150920&query=%@",latitude,longitude,self.searchTextField.text];
     NSString *encodedString = [queryString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     
