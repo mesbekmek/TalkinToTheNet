@@ -151,6 +151,16 @@ CLLocationManagerDelegate>
     NSLog(@"Tap recognizer removed from view");
 }
 
+//Touches began works when touching the view outside the keyboard and tableview (not really convenient)
+
+//-(void) touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+//    UITouch *touch = [touches anyObject];
+//    if(touch.phase == UITouchPhaseBegan){
+//        [self.searchTextField endEditing:YES];
+//        NSLog(@"Tap recognizer removed");
+//    }
+//}
+
 #pragma mark - Map View and Location Manager methods
 
 -(void)mapView:(MKMapView *)mapView didUpdateUserLocation:(nonnull MKUserLocation *)userLocation{
@@ -212,8 +222,10 @@ CLLocationManagerDelegate>
     NSString *encodedString = [queryString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     NSLog(@"%@",self.searchTextField.text);
     [self fetchFourSquareData:encodedString];
+
     [self.searchTextField endEditing:YES];
-    
+    [self.view removeGestureRecognizer:tap];
+    NSLog(@"Tap Recognizer removed from search button tapped");
     
 }
 
