@@ -10,7 +10,6 @@
 
 @interface FourSquareDetailViewController : ViewController
 
-
 @property (nonatomic) NSDictionary *foursquareData;
 
 @end
