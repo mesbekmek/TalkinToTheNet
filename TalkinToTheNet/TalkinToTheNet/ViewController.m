@@ -127,20 +127,23 @@ CLLocationManagerDelegate>
     
     [self fetchFourSquareData:encodedString];
     [textField endEditing:YES];
+    [self.view removeGestureRecognizer:tap];
+    NSLog(@"Tap recognizer removed");
     return YES;
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField{
     //Dismiss keyboard when pressing outside textfield
     tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
-    [self.view addGestureRecognizer:tap];   
+    [self.view addGestureRecognizer:tap];
+    NSLog(@"Tap recognizer added to view");
 }
 
 
 -(void)dismissKeyboard{
     [self.searchTextField resignFirstResponder];
     [self.view removeGestureRecognizer:tap];
-    
+    NSLog(@"Tap recognizer removed from view");
 }
 
 #pragma mark - Map View and Location Manager methods
@@ -195,6 +198,7 @@ CLLocationManagerDelegate>
 
     NSString *queryString = [NSString stringWithFormat:@"https://api.foursquare.com/v2/venues/search?ll=%@,%@&client_id=2Y20530SGQR4IN4DVOMH41P312TZMVKSTFEMQNERGYQ3UW2T&client_secret=4F3XAJLC01RA5IXLSI20XKOFYJI2ZVKJWEV2235WIV0N4MJG&v=20150920&query=%@",latitude,longitude,self.searchTextField.text];
     NSString *encodedString = [queryString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    [self.searchTextField endEditing:YES];
     NSLog(@"%@",self.searchTextField.text);
     [self fetchFourSquareData:encodedString];
 }
