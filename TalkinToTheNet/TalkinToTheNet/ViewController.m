@@ -116,6 +116,7 @@ CLLocationManagerDelegate>
     NSDictionary *dict = self.searchResults[indexPath.row];
     NSString *venueName = [dict objectForKey:@"name"];
     cell.textLabel.text = venueName;
+    cell.detailTextLabel.text = dict[@"location"][@"formattedAddress"][0];
     
     return cell;
 }
